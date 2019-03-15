@@ -2,6 +2,8 @@ import logging
 import requests
 from src import WebDriverWait, EC, By
 import time
+import lxml.etree
+from io import StringIO
 
 class Operations(object):
     
@@ -25,11 +27,27 @@ class Operations(object):
             return False
     
     def get_element(self, element_data):
+
         try:
-            return WebDriverWait(self.driver, 3000).until(
-                    EC.presence_of_element_located((By.XPATH, element_data)))
-        except Exception:
-            logging.error("Element not found")
+            return WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, element_data)))
+        except Exception as e:
+            # if element is inside iframe then...
+            try:
+                # get all iframes 
+                iframes = self.driver.find_elements_by_tag_name("iframe")
+                #iterate through all iframes
+                for iframe in range(len(iframes)):
+                    self.driver.switch_to_frame(iframe)
+                    logging.info("switching to iframe_no: {}".format(iframe))
+                    # locate our element
+                    try:
+                        return WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, element_data)))
+                    
+                    except Exception:
+                        self.driver.switch_to_default_content()
+            
+            except Exception as e:
+                logging.error(e)
 
     def full_page_screenshot(self, image_name=None):
         try:

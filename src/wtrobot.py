@@ -18,14 +18,6 @@ class WTRobot(Operations):
             self.full_page_screenshot(test_data["screenshot_name"])
         return logger_wrapper
 
-    # def screenshot_decorator(function):
-    #     def logger_wrapper(*args):
-    #         self = args[0]
-    #         test_data = args[1]
-    #         self.full_page_screenshot()
-    #         function(*args)
-    #     return logger_wrapper
-
     @logger_decorator
     def goto(self, test_data):
         """
@@ -50,6 +42,9 @@ class WTRobot(Operations):
         try:
             click_obj = self.get_element(test_data["target"])
             click_obj.click()
+            
+            self.driver.switch_to_default_content()
+        
         except Exception as e:
             logging.exception(e)
         # print(test_data)
