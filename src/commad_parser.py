@@ -1,40 +1,16 @@
-'''
-testcase 1:
-  senario: <your senario desc>
-  step 1:
-    action: input user user id
-    command: input | click | import | sleep | wait | validate | function | hover | goto | screenshot
-    target: //input[@id="userid"]
-    targets: [,,,]
-    value: admin
-  
-  step 2:
-    action: import some testcase
-    command: import
-    target: testcase 2  
-  
-  step 3:
-    action: call custome function
-    command: function
-    target: function_name
-    value: [,,,]  <params for the function>
-'''
-
 import os,sys
 import logging 
-from yaml import load,dump
+from yaml import load, dump
 import src
 
 class commmandParser:
     
-    logging.basicConfig(filename='wtlogs.log',level=logging.INFO,format="%(levelname)s - %(asctime)s - %(filename)s - %(lineno)d - %(message)s")
-    
-    def __init__(self, driver, script_filepath):
-        # marker to denote new log starting
-        logging.info("------------------new---------------------")
-        self.testscript = self.yaml_loader(filepath=script_filepath)
-        self.obj_wtrobot = src.WTRobot(driver) 
-        if not os.path.exists("./tmp"): 
+    def __init__(self, global_conf):
+
+        self.global_conf = global_conf
+        self.testscript = self.yaml_loader(filepath=self.global_conf["script_filepath"])
+        self.obj_action = src.Actions(self.global_conf)
+        if not os.path.exists("./tmp"):
             os.makedirs("./tmp")
 
         # initate parser
@@ -77,22 +53,32 @@ class commmandParser:
                             logging.error("Testcase number or import target value incorrect/missing in {} at {}".format(testcase_no,step))
                     
                     # check if mentioned action is supported by WTRobotv2
-                    elif testcase_dict[step]["action"] in dir(self.obj_wtrobot):
+                    elif testcase_dict[step]["action"] in dir(self.obj_action):
                         # adding testcase no and step_no just to keep track of execution
                         testcase_dict[step]["step_no"] = step
                         testcase_dict[step]["testcase_no"] = testcase_no 
                         # call respective function
-                        getattr(self.obj_wtrobot, testcase_dict[step]["action"])(testcase_dict[step])
+                        testcase_dict[step] = getattr(self.obj_action, testcase_dict[step]["action"])(testcase_dict[step])
+                        # cleanup
+                        testcase_dict[step].pop("step_no")                       
+                        testcase_dict[step].pop("testcase_no")
+
+                        if "error" in testcase_dict[step].keys() and testcase_dict[step]["error"] == True:
+                            testcase_dict[step].pop("error")
+                            logging.warning("Exiting testcase:{} due to failure in step:{}".format(testcase_no,step))
+                            break
 
                     else:
                         logging.error("INVALID COMMAND '{}' in {} at {}".format(testcase_dict[step]["action"], testcase_no, step))
 
                 # senario tag of single testcase
-                elif isinstance(testcase_dict["senario"], str):
-                    logging.info("Executing senario: {}".format(testcase_dict["senario"]))
+                elif isinstance(testcase_dict["scenario"], str):
+                    logging.info("Executing scenario: {}".format(testcase_dict["scenario"]))
                 
                 else:
                     logging.error("INVALID COMMAND '{}' in {} at {}".format(testcase_dict[step]["action"], testcase_no, step))
+
+        return testcase_dict
 
     def testscript_parser(self):
         '''
@@ -107,4 +93,7 @@ class commmandParser:
             testcase_list = self.testscript.keys()
 
         for testcase in testcase_list:
-            self.testcase_parser(testcase_dict=self.testscript[testcase],testcase_no=testcase)
+            self.testscript[testcase] = self.testcase_parser(testcase_dict=self.testscript[testcase],testcase_no=testcase)
+        
+        # update script file 
+        self.yaml_dump(filepath=self.global_conf["script_filepath"], data=self.testscript)

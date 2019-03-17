@@ -3,7 +3,7 @@ import requests
 from src import WebDriverWait, EC, By
 import time
 import lxml.etree
-from io import StringIO
+from src import StringIO
 
 class Operations(object):
     

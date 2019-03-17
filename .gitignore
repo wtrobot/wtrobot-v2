@@ -9,7 +9,9 @@ __pycache__/
 *$py.class
 .vscode/
 tmp/
-test.yml
+*.yml
+*.yaml
+*.logs
 
 # C extensions
 *.so
