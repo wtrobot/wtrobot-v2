@@ -25,7 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--script", metavar="", required=True, help="Testscript file path")
     parser.add_argument("-l", "--locale", metavar="", default="en_US",help="The language code to traverse in eg: en_US, ja_JP")
     parser.add_argument("-b", "--browser", metavar="", default="firefox", help="Browser to be used firefox/chrome")
-    parser.add_argument("-d", "--driver", metavar="", default="./selenium_drivers/geckodriver", help="File path to selenium webdriver eg: geckodriver, chromedriver.\
+    parser.add_argument("-d", "--driver", metavar="", help="File path to selenium webdriver eg: geckodriver, chromedriver.\
         By default it will firefox drivers from selenium_drivers dir locally")
     parser.add_argument("-L", "--log", metavar="", default="./wtlog.log", help="WTRobot execution log file path")
 

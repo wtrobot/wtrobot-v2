@@ -22,9 +22,9 @@ class Actions(Operations):
             
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = int(round(time.time() * 1000))
+                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], str(int(round(time.time() * 1000))))
             else:
-                screenshot_file_name = test_data["screenshot_name"]
+                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], test_data["screenshot_name"])
             self.full_page_screenshot(screenshot_file_name)
 
             return test_result_data
@@ -41,10 +41,15 @@ class Actions(Operations):
             self.global_conf["webdriver_path"] = "./selenium_drivers/chromedriver"
         
         if self.global_conf["browser"] == "firefox":
-            self.driver = webdriver.Firefox(executable_path=self.global_conf["webdriver_path"])
+            profile = webdriver.FirefoxProfile()
+            profile.set_preference("intl.accept_languages", self.global_conf["locale"])
+            profile.accept_untrusted_certs = True
+            self.driver = webdriver.Firefox(firefox_profile=profile, executable_path=self.global_conf["webdriver_path"])
         elif self.global_conf["browser"] =="chrome":
-            self.driver = webdriver.Chrome(executable_path=self.global_conf["webdriver_path"])
-        
+            options = webdriver.ChromeOptions()
+            options.add_experimental_option('prefs', {'intl.accept_languages': '{}'.format(self.global_conf["locale"])})
+            self.driver = webdriver.Chrome(executable_path=self.global_conf["webdriver_path"], chrome_options=options)
+
         self.driver.maximize_window()
 
 
@@ -109,9 +114,10 @@ class Actions(Operations):
         try:
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = int(round(time.time() * 1000))
+                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], str(int(round(time.time() * 1000))))
             else:
-                screenshot_file_name = test_data["screenshot_name"]    
+                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], test_data["screenshot_name"])
+
             self.full_page_screenshot(screenshot_file_name)
         except Exception as e:
             logging.exception(e)
@@ -143,3 +149,10 @@ class Actions(Operations):
         print(test_data)
         return test_data
     
+    def closebrowser(self, test_data):
+        try:
+            logging.info("Closing browser...")
+            self.driver.close()
+        except Exception as e:
+            logging.exception(e)
+        return test_data
