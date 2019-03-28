@@ -1,6 +1,7 @@
 import time
 import logging
-from src import Operations, ActionChains, webdriver 
+from src import Operations, ActionChains, webdriver, WebDriverWait, EC, By 
+from selenium.common.exceptions import ElementNotInteractableException, ElementNotVisibleException
 
 class Actions(Operations):
 
@@ -81,10 +82,13 @@ class Actions(Operations):
             click_obj.click()
             
             self.driver.switch_to_default_content()
-        
-        except Exception as e:
-            logging.exception(e)
+        except ElementNotVisibleException:
+            click_obj = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
+            ActionChains(self.driver).move_to_element(click_obj).perform()
+        except:
+            logging.exception("error")
             test_data["error"] = True
+
         return test_data
     
     @logger_decorator
