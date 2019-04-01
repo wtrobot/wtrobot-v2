@@ -10,6 +10,7 @@ class Actions(Operations):
         self.browser_init()
 
     def logger_decorator(function):
+
         def logger_wrapper(*args):
             self = args[0]
             test_data = args[1]
@@ -18,17 +19,27 @@ class Actions(Operations):
             if "sleep" in test_data.keys():
                 logging.info("Sleep for {} seconds before {} ".format(test_data["sleep"], test_data["action"]))
                 time.sleep(test_data["sleep"])
-                
+            
+            elif "wait before action" in test_data.keys():
+                logging.info("waiting before action")
+                self.wait(test_data["wait before action"])
+
+            #method call
             test_result_data = function(*args)
             
+            if "wait after action" in test_data.keys():
+                logging.info("waiting after action")
+                self.wait(test_data["wait after action"])
+
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], str(int(round(time.time() * 1000))))
+                screenshot_file_name = "{}_{}_{}_{}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
             else:
                 screenshot_file_name = "{}_{}".format(self.global_conf["locale"], test_data["screenshot_name"])
             self.full_page_screenshot(screenshot_file_name)
 
             return test_result_data
+        
         return logger_wrapper
 
 
@@ -85,6 +96,9 @@ class Actions(Operations):
         except ElementNotVisibleException:
             click_obj = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
             ActionChains(self.driver).move_to_element(click_obj).perform()
+        except ElementNotInteractableException:
+            click_obj = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
+            ActionChains(self.driver).move_to_element(click_obj).perform()
         except:
             logging.exception("error")
             test_data["error"] = True
@@ -118,7 +132,7 @@ class Actions(Operations):
         try:
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], str(int(round(time.time() * 1000))))
+                screenshot_file_name = "{}_{}_{}_{}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
             else:
                 screenshot_file_name = "{}_{}".format(self.global_conf["locale"], test_data["screenshot_name"])
 
@@ -139,19 +153,30 @@ class Actions(Operations):
         return test_data
 
     @logger_decorator
-    def wait(self, test_data):
-        print(test_data)
-        return test_data
-
-    @logger_decorator
     def validate(self, test_data):
-        print(test_data)
+        
+        xpath_denoter = ("//","/html","/")
+
+        if test_data["target"].startswith(xpath_denoter):
+            try:
+                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, test_data["target"])))
+            except:
+                logging.error("Element not found")
+                test_data["error"] = True
+        else:
+            try: 
+                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH,"//*[contains(text(), '{}')]".format(test_data["target"]))))
+            except:
+                logging.error("Element not found")
+                test_data["error"] = True
+
         return test_data
 
     @logger_decorator
     def function(self, test_data):
-        print(test_data)
+        print("yet to implement")
         return test_data
+    
     
     def closebrowser(self, test_data):
         try:

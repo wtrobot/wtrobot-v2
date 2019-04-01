@@ -4,6 +4,7 @@ from src import WebDriverWait, EC, By
 import time
 import lxml.etree
 from src import StringIO
+from selenium.common.exceptions import ElementNotVisibleException
 
 class Operations(object):
     
@@ -30,6 +31,10 @@ class Operations(object):
 
         try:
             return WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, element_data)))
+        
+        except ElementNotVisibleException:
+            logging.exception("Element Not Visible Exception")
+
         except Exception as e:
             # if element is inside iframe then...
             try:
@@ -57,3 +62,22 @@ class Operations(object):
         except Exception as e:
             logging.exception(e)
     
+    def wait(self, test_data):
+        '''
+        This method will wait for specified time/element/text on screen
+        '''
+        xpath_denoter = ("//","/html","/")
+
+        if isinstance(test_data, int):
+            time.sleep(test_data)
+        
+        elif test_data.startswith(xpath_denoter):
+            try:
+                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, test_data)))
+            except:
+                logging.error("Element not found")
+        else:
+            try: 
+                WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH,"//*[contains(text(), '{}')]".format(test_data))))
+            except:
+                logging.error("Element not found")

@@ -1,9 +1,16 @@
 **TestScript Template:**
 
-<testcase>
-    <scenario>
+sequence:
+- testcase 1
+- testcase 2....
+
+test:
+
+- <testcase>:
+
+    - <scenario>:
     
-    <step>
+    - <step>:
 
          <name>
          
@@ -16,16 +23,21 @@
          <screenshot_name>
 
          <sleep>
+         
+         <wait before action>
+
+         <wait after action>
 
 ---------------------------------------------------------
 
-testcase 1:
-    scenario: <your test senario desc>
+test: 
+- testcase 1:
+    - scenario: <your test senario desc>
     
-    step 1:
+    - step 1:
         name: input user user id >
         
-        action: input | click | import | sleep | wait | validate | function | hover | goto | screenshot
+        action: input | click | import | sleep | wait | validate | function | hover | goto | screenshot | closebrowser
         
         target: //input[@id="userid"]
         
@@ -35,14 +47,14 @@ testcase 1:
 
         sleep: 10
         
-    step 2:
+    - step 2:
         name: import some testcase
         
         action: import
         
         target: testcase 2  
   
-    step 3:
+    - step 3:
         name: call custome function
         
         action: function
