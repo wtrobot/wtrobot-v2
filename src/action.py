@@ -89,9 +89,9 @@ class Actions(Operations):
     @logger_decorator
     def click(self, test_data):
         try:
-            click_obj = self.get_element(test_data["target"])
-            click_obj.click()
-            
+            test_data = self.get_element(test_data)
+            test_data["element_obj"].click()
+
             self.driver.switch_to_default_content()
         except ElementNotVisibleException:
             click_obj = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
@@ -108,8 +108,8 @@ class Actions(Operations):
     @logger_decorator
     def hover(self, test_data):
         try:
-            hover_obj = self.get_element(test_data["target"])
-            ActionChains(self.driver).move_to_element(hover_obj).perform()
+            test_data = self.get_element(test_data)
+            ActionChains(self.driver).move_to_element(test_data["element_obj"]).perform()
         except Exception as e:
             logging.exception(e)
             test_data["error"] = True
@@ -119,8 +119,8 @@ class Actions(Operations):
     @logger_decorator
     def input(self, test_data):
         try:
-            input_obj = self.get_element(test_data["target"])
-            input_obj.send_keys(test_data["value"])
+            test_data = self.get_element(test_data)
+            test_data["element_obj"].send_keys(test_data["value"])
         except Exception as e:
             logging.exception(e)
             test_data["error"] = True

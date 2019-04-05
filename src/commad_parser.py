@@ -67,12 +67,17 @@ class commmandParser:
                 elif testcase_list[index][step]["action"] in dir(self.obj_action):         
                     testcase_list[index][step]["step_no"] = step
                     testcase_list[index][step]["testcase_no"] = testcase_no 
+                    
                     # call respective function
                     method_name = testcase_list[index][step]["action"]
                     testcase_list[index][step] = getattr(self.obj_action, method_name)(testcase_list[index][step])
+                    
                     # cleanup
                     testcase_list[index][step].pop("step_no")                       
                     testcase_list[index][step].pop("testcase_no")
+                    if "element_obj" in testcase_list[index][step].keys():
+                        testcase_list[index][step].pop("element_obj")
+
                     # Exit loop if error bit set for testcase
                     if "error" in testcase_list[index][step].keys() and testcase_list[index][step]["error"] == True:
                         testcase_list[index][step].pop("error")
