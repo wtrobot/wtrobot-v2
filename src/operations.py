@@ -29,9 +29,15 @@ class Operations(object):
     
     def get_element(self, element_data):
 
+        xpath_denoter = ("//","/html","/")
+
         try:
-            return WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, element_data)))
-        
+            if element_data.startswith(xpath_denoter):
+                return WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, element_data)))
+            else:
+                xpath = "//*[contains(text(),'{0}') or contains(@value,'{0}')]".format(element_data)
+                return WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, xpath)))
+
         except ElementNotVisibleException:
             logging.exception("Element Not Visible Exception")
 
