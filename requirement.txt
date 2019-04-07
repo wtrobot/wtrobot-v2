@@ -1,4 +1,4 @@
 selenium
-pyyaml
+ruamel.yaml
 lxml
 requests

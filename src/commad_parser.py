@@ -1,11 +1,16 @@
 import os,sys
 import logging 
-from yaml import load, dump, FullLoader
+from collections import OrderedDict
+from ruamel.yaml import YAML
 import src
 
 class commmandParser:
     
     def __init__(self, global_conf):
+        
+        self.yaml = YAML()
+        self.yaml.indent(1)
+        self.yaml.explicit_start = True
 
         self.global_conf = global_conf
         self.testscript = self.yaml_loader(filepath=self.global_conf["script_filepath"])
@@ -24,11 +29,11 @@ class commmandParser:
         data = dict()
         if os.path.isfile(filepath):
             with open(filepath, "r") as obj:
-                data = load(obj, Loader=FullLoader)
+                data = self.yaml.load(obj)
             if not data:
                 return dict()
         else:
-            logging.error("invalid file {}".format(filepath))
+            logging.error("invalid file {0}".format(filepath))
             sys.exit(0)            
         return data
 
@@ -36,7 +41,7 @@ class commmandParser:
     def yaml_dump(self, filepath, data):
         ''' Write the dict to yaml file '''
         with open(filepath, "w") as obj:
-            dump(data, obj, default_flow_style=False)
+            self.yaml.dump(data, obj)
 
     def testcase_parser(self, testcase_list, testcase_no):
         '''
@@ -47,14 +52,23 @@ class commmandParser:
         for step in testcase_list:
             step_list.append(list(step.keys())[0])
         
+        # if scenario tag not specifed then add empty tag to avoid exception
+        if "scenario" not in step_list:
+            step_list.insert(0, "scenario")
+            tmpdict = OrderedDict([("scenario", None)]) 
+            testcase_list.insert(0, tmpdict)        
+
         for step in step_list:
             index = step_list.index(step)
             if step == "scenario":
-                logging.info("Executing scenario: {}".format(testcase_list[0]["scenario"]))
+                logging.info("Executing testcase: {0} - {1}".format(testcase_no, testcase_list[0]["scenario"]))
             
             elif isinstance(testcase_list[index], dict):
                 
-                if testcase_list[index][step]["action"] == "import":
+                if not testcase_list[index][step]:
+                    logging.error("Empty step or improper indentation for steps in yaml testscript")
+                    
+                elif testcase_list[index][step]["action"] == "import":
                     #import testcase no
                     tmp_testcase_no = testcase_list[index][step]["target"]
                     index2 = self.global_testcase_no_list.index(tmp_testcase_no)
@@ -81,11 +95,11 @@ class commmandParser:
                     # Exit loop if error bit set for testcase
                     if "error" in testcase_list[index][step].keys() and testcase_list[index][step]["error"] == True:
                         testcase_list[index][step].pop("error")
-                        logging.warning("Exiting testcase:{} due to failure in step:{}".format(testcase_no, step))
+                        logging.warning("Exiting testcase:{0} due to failure in step:{1}".format(testcase_no, step))
                         break
                 
                 else:
-                    logging.error("INVALID COMMAND '{}' in {} at {}".format(testcase_list[step_list.index(step)][step]["action"], testcase_no, step))
+                    logging.error("INVALID COMMAND '{0}' in {1} at {2}".format(testcase_list[step_list.index(step)][step]["action"], testcase_no, step))
         
         return testcase_list
 
@@ -108,13 +122,12 @@ class commmandParser:
         else: 
             sequence_testcase_no_list = self.global_testcase_no_list 
 
-        # for count in range(len(self.testscript["test"])):
         for testcase in sequence_testcase_no_list:
-                index = self.global_testcase_no_list.index(testcase)
-                self.testscript["test"][index][testcase] = self.testcase_parser(
-                    testcase_list = self.testscript["test"][index][testcase], 
-                    testcase_no = testcase
-                    )
+            index = self.global_testcase_no_list.index(testcase)
+            self.testscript["test"][index][testcase] = self.testcase_parser(
+                testcase_list = self.testscript["test"][index][testcase], 
+                testcase_no = testcase
+                )
 
         # update script file 
         self.yaml_dump(filepath=self.global_conf["script_filepath"], data=self.testscript)

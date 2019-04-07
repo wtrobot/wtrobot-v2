@@ -14,12 +14,19 @@ class Actions(Operations):
         def logger_wrapper(*args):
             self = args[0]
             test_data = args[1]
+
+            # If no name key in step then add none to avoid execption
+            if "name" not in test_data.keys(): 
+                test_data["name"] = None
+
             logging.info("TestCase:{} - Step:{} - {}".format(test_data["testcase_no"],test_data["step_no"], test_data["name"])) 
             
+            # If sleep key mentioned in steps
             if "sleep" in test_data.keys():
                 logging.info("Sleep for {} seconds before {} ".format(test_data["sleep"], test_data["action"]))
                 time.sleep(test_data["sleep"])
             
+            # If wait before action mentioned in steps
             elif "wait before action" in test_data.keys():
                 logging.info("waiting before action")
                 self.wait(test_data["wait before action"])
@@ -27,17 +34,19 @@ class Actions(Operations):
             #method call
             test_result_data = function(*args)
             
+            # If wait before action mentioned in steps
             if "wait after action" in test_data.keys():
                 logging.info("waiting after action")
                 self.wait(test_data["wait after action"])
 
+            # screenshot after every action
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
                 screenshot_file_name = "{}_{}_{}_{}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
             else:
                 screenshot_file_name = "{}_{}".format(self.global_conf["locale"], test_data["screenshot_name"])
             self.full_page_screenshot(screenshot_file_name)
-
+            
             return test_result_data
         
         return logger_wrapper
