@@ -1,16 +1,24 @@
-**TestScript Template:**
+ **TestScript Template:**
+
+
+---
+
 
 sequence:
-- testcase 1
-- testcase 2....
+
+
+\- testcase 1
+
+
+\- testcase 2....
 
 test:
 
-- <testcase>:
+\- <testcase>:
 
-    - <scenario>:
+    \- <scenario>:
     
-    - <step>:
+    \- <step>:
 
          <name>
          
@@ -18,6 +26,8 @@ test:
          
          <target>
          
+         <targets>
+
          <value>
 
          <screenshot_name>
@@ -27,14 +37,27 @@ test:
          <wait before action>
 
          <wait after action>
+         
+         <iframe no>
+
 
 ---------------------------------------------------------
 
-test: 
-- testcase 1:
-    - scenario: <your test senario desc>
+
+--- 
+
+sequence:
+
+\- testcase 1
+
+\- testcase 2 ....
+
+test:
+
+\- testcase 1:
+    \- scenario: <your test senario desc>
     
-    - step 1:
+    \- step 1:
         name: input user user id >
         
         action: input | click | import | sleep | wait | validate | function | hover | goto | screenshot | closebrowser
@@ -47,14 +70,14 @@ test:
 
         sleep: 10
         
-    - step 2:
+    \- step 2:
         name: import some testcase
         
         action: import
         
         target: testcase 2  
   
-    - step 3:
+    \- step 3:
         name: call custome function
         
         action: function
@@ -64,4 +87,4 @@ test:
         value: [,,,]  <params for the function>
 
 testcase 2:
-...
+... 
