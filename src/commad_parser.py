@@ -65,11 +65,26 @@ class commmandParser:
             
             elif isinstance(testcase_list[index], dict):
                 
+                # if indentation for step elements are improper  
                 if not testcase_list[index][step]:
                     logging.error("Empty step or improper indentation for steps in yaml testscript")
-                    
-                elif testcase_list[index][step]["action"] == "import":
-                    #import testcase no
+
+                # if "targets" mentioned is str then convert to list  
+                if "targets" in testcase_list[index][step].keys() and isinstance(testcase_list[index][step]["targets"], str):
+                    logging.error("Targets specified must be list in testcase:{0} step: {1} in yaml testscript".format(testcase_no, step))
+                    tmp = testcase_list[index][step]["targets"]
+                    testcase_list[index][step]["targets"] = list([tmp])
+                
+                # if "targets" not specified in yaml script then create a list and copy target value init  
+                if "targets" not in testcase_list[index][step].keys() and "target" in testcase_list[index][step].keys():
+                    testcase_list[index][step]["targets"] = list([testcase_list[index][step]["target"]])
+                
+                # if "targets" specified and no "target" then copy first element from targets   
+                elif "targets" in testcase_list[index][step].keys() and "target" not in testcase_list[index][step].keys():
+                    testcase_list[index][step]["target"] = testcase_list[index][step]["targets"][0]
+                
+                # if action is import 
+                if testcase_list[index][step]["action"] == "import":
                     tmp_testcase_no = testcase_list[index][step]["target"]
                     index2 = self.global_testcase_no_list.index(tmp_testcase_no)
                     self.testscript["test"][index2][tmp_testcase_no] = self.testcase_parser(

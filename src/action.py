@@ -19,11 +19,11 @@ class Actions(Operations):
             if "name" not in test_data.keys(): 
                 test_data["name"] = None
 
-            logging.info("TestCase:{} - Step:{} - {}".format(test_data["testcase_no"],test_data["step_no"], test_data["name"])) 
+            logging.info("TestCase:{0} - Step:{1} - {2}".format(test_data["testcase_no"],test_data["step_no"], test_data["name"])) 
             
             # If sleep key mentioned in steps
             if "sleep" in test_data.keys():
-                logging.info("Sleep for {} seconds before {} ".format(test_data["sleep"], test_data["action"]))
+                logging.info("Sleep for {0} seconds before {1} ".format(test_data["sleep"], test_data["action"]))
                 time.sleep(test_data["sleep"])
             
             # If wait before action mentioned in steps
@@ -42,9 +42,9 @@ class Actions(Operations):
             # screenshot after every action
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = "{}_{}_{}_{}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
+                screenshot_file_name = "{0}_{1}_{2}_{3}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
             else:
-                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], test_data["screenshot_name"])
+                screenshot_file_name = "{0}_{1}".format(self.global_conf["locale"], test_data["screenshot_name"])
             self.full_page_screenshot(screenshot_file_name)
             
             return test_result_data
@@ -68,7 +68,7 @@ class Actions(Operations):
             self.driver = webdriver.Firefox(firefox_profile=profile, executable_path=self.global_conf["webdriver_path"])
         elif self.global_conf["browser"] =="chrome":
             options = webdriver.ChromeOptions()
-            options.add_experimental_option('prefs', {'intl.accept_languages': '{}'.format(self.global_conf["locale"])})
+            options.add_experimental_option('prefs', {'intl.accept_languages': '{0}'.format(self.global_conf["locale"])})
             self.driver = webdriver.Chrome(executable_path=self.global_conf["webdriver_path"], chrome_options=options)
 
         self.driver.maximize_window()
@@ -102,12 +102,23 @@ class Actions(Operations):
             test_data["element_obj"].click()
 
             self.driver.switch_to_default_content()
-        except ElementNotVisibleException:
-            click_obj = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
-            ActionChains(self.driver).move_to_element(click_obj).perform()
-        except ElementNotInteractableException:
-            click_obj = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
-            ActionChains(self.driver).move_to_element(click_obj).perform()
+        except (ElementNotVisibleException,ElementNotInteractableException):
+            click_obj = None
+            for locator in test_data["targets"]: 
+                if not click_obj:
+                    test_data["target"] = locator
+                    logging.info("finding element for actionchain click using locator: {0} ".format(locator)) 
+                    try:
+                        click_obj = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
+                    except Exception:
+                        click_obj = None
+                else:
+                    break
+            if click_obj:
+                ActionChains(self.driver).move_to_element(click_obj).perform()
+            else:
+                logging.exception("error")
+                test_data["error"] = True
         except:
             logging.exception("error")
             test_data["error"] = True
@@ -141,9 +152,9 @@ class Actions(Operations):
         try:
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = "{}_{}_{}_{}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
+                screenshot_file_name = "{0}_{1}_{2}_{3}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
             else:
-                screenshot_file_name = "{}_{}".format(self.global_conf["locale"], test_data["screenshot_name"])
+                screenshot_file_name = "{0}_{1}".format(self.global_conf["locale"], test_data["screenshot_name"])
 
             self.full_page_screenshot(screenshot_file_name)
         except Exception as e:
@@ -174,7 +185,7 @@ class Actions(Operations):
                 test_data["error"] = True
         else:
             try: 
-                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH,"//*[contains(text(), '{}')]".format(test_data["target"]))))
+                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH,"//*[contains(text(), '{0}')]".format(test_data["target"]))))
             except:
                 logging.error("Element not found")
                 test_data["error"] = True
