@@ -1,90 +1,148 @@
- **TestScript Template:**
-
-
----
-
+**TestScript Template:**
 
 sequence:
-
-
-\- testcase 1
-
-
-\- testcase 2....
+- testcase 1
+- testcase 2....
 
 test:
 
-\- <testcase>:
+- <testcase>:
 
-    \- <scenario>:
-    
-    \- <step>:
+    - <scenario>:
+
+    - <step>:
 
          <name>
-         
+
          <action>
-         
+
          <target>
-         
-         <targets>
 
          <value>
 
          <screenshot_name>
 
          <sleep>
-         
+
          <wait before action>
 
          <wait after action>
-         
-         <iframe no>
-
 
 ---------------------------------------------------------
 
+- List of actions: input | click | import | sleep | wait | validate | function | hover | goto | screenshot | closebrowser
 
---- 
+--------------
 
-sequence:
 
-\- testcase 1
+- **Test script for action - 'goto':**
 
-\- testcase 2 ....
 
-test:
+.. code-block:: rst
 
-\- testcase 1:
-    \- scenario: <your test senario desc>
-    
-    \- step 1:
-        name: input user user id >
-        
-        action: input | click | import | sleep | wait | validate | function | hover | goto | screenshot | closebrowser
-        
-        target: //input[@id="userid"]
-        
-        value: admin
-        
-        screenshot_name: testcase-1-2-3
+    test:
 
-        sleep: 10
-        
-    \- step 2:
-        name: import some testcase
-        
-        action: import
-        
-        target: testcase 2  
-  
-    \- step 3:
-        name: call custome function
-        
-        action: function
-        
-        target: function_name
-        
-        value: [,,,]  <params for the function>
+    - testcase 1:
+        - scenario: Open GitHub website
 
-testcase 2:
-... 
+        - step 1:
+            name: Go to WTRobot project repository
+
+            action: goto
+
+            target: https://github.com/vishalvijayraghavan/WTRobot-v2
+
+-------
+
+- **Test script for action - 'click':**
+
+
+.. code-block:: rst
+
+    test:
+
+    - testcase 2:
+        - scenario: See list of contributors involved in this project
+
+        - step 1:
+            name: Click on contributors
+
+            action: click
+
+            target: contributors
+
+-------------
+
+
+- **Test script for action - 'input':**
+
+
+.. code-block:: rst
+
+
+    test:
+
+    - testcase 3:
+        - scenario: Search other projects on GitHub
+
+        - step 1:
+            name: Searching GitHub projects
+
+            action: input
+
+            target: /html/body/div[1]/header/div[2]/div/div/form/label/input[1]
+
+-----------
+
+
+- **Test script for action - 'import':**
+
+
+.. code-block:: bash
+
+
+    test:
+
+    - testcase 4:
+        - scenario: Opening GitHub website and search projects
+
+        - step 1:
+            name: Opening GitHub website
+
+            action: import
+
+            target: testcase 1
+
+        - step 2:
+            name: Searching GitHub projects
+
+            action: import
+
+            target: testcase 3
+
+-----------------
+
+
+- **Test script for action - 'sleep':**
+
+
+
+.. code-block:: rst
+
+
+    test:
+
+    - testcase 5:
+        - scenario: Search other projects on GitHub and wait for sometime
+
+        - step 1:
+            name: Searching GitHub projects
+
+            action: input
+
+            target: /html/body/div[1]/header/div[2]/div/div/form/label/input[1]
+
+        - step 2:
+            name: Waiting for suggestion to appear while searching new project
+
+            action: sleep
