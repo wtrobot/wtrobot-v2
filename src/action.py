@@ -2,6 +2,7 @@ import time
 import logging
 from src import Operations, ActionChains, webdriver, WebDriverWait, EC, By 
 from selenium.common.exceptions import ElementNotInteractableException, ElementNotVisibleException
+from selenium.webdriver.common.keys import Keys
 
 class Actions(Operations):
 
@@ -72,6 +73,59 @@ class Actions(Operations):
             self.driver = webdriver.Chrome(executable_path=self.global_conf["webdriver_path"], chrome_options=options)
 
         self.driver.maximize_window()
+
+
+    @logger_decorator
+    def scroll(self, test_data):
+        '''
+        This function will scroll given page as per given params
+        specify target or x,y 
+        default it will do page down
+        '''
+        try:
+
+            if "target" in test_data.keys():
+                test_data  = self.get_element(test_data)
+                self.driver.execute_script("arguments[0].scrollIntoView();", test_data["element_obj"])
+            elif "x" in test_data.keys() or "y" in test_data.keys():
+                if "x" not in test_data.keys():
+                    test_data["x"] = 0
+                elif "y" not in test_data.keys():
+                    test_data["y"] = 0
+                self.driver.execute_script("window.scrollTo(arguments[0], arguments[1]);",test_data["x"],test_data["y"])
+            else:
+                test_data["values"] = "Keys.PAGE_DOWN"
+                test_data = self.sendkeys(test_data)
+
+        except Exception as e:
+            logging.error(e)
+            test_data["error"] = True
+        return test_data
+
+
+    @logger_decorator
+    def sendkeys(self, test_data):
+        '''
+        https://seleniumhq.github.io/selenium/docs/api/py/webdriver/selenium.webdriver.common.keys.html
+        '''
+        try:
+            print(test_data)
+            if "values" in test_data.keys():
+                actions = ActionChains(self.driver) 
+                
+                if "Keys" in test_data["values"]:
+                    actions.send_keys(getattr(Keys, test_data["values"].split(".")[1]))
+                else:
+                    actions.send_keys(test_data["values"])
+                actions.perform()
+            
+            else:
+                logging.error("values attribute not specified/invalid")
+                test_data["error"] = True
+        except Exception as e:
+            logging.error(e)
+            test_data["error"] = True
+        return test_data
 
 
     @logger_decorator
