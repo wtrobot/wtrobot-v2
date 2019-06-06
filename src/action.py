@@ -1,7 +1,7 @@
 import time
 import logging
 from src import Operations, ActionChains, webdriver, WebDriverWait, EC, By 
-from selenium.common.exceptions import ElementNotInteractableException, ElementNotVisibleException
+from selenium.common.exceptions import ElementNotInteractableException, ElementNotVisibleException, TimeoutException
 from selenium.webdriver.common.keys import Keys
 
 class Actions(Operations):
@@ -74,6 +74,23 @@ class Actions(Operations):
 
         self.driver.maximize_window()
 
+    @logger_decorator
+    def alertmessage(self, test_data):
+        '''
+        This function will handle all alert messages
+        '''
+        try:
+            WebDriverWait(self.driver, 10).until(EC.alert_is_present(), 'Waiting for alert timed out')
+            alert = self.driver.switch_to.alert
+            if test_data["value"] == "ok":
+                alert.accept()
+            elif test_data["value"] == "cancel":
+                alert.dismiss()
+            else:
+                alert.accept()
+        except TimeoutException:
+            test_data["error"] = True
+        return test_data
 
     @logger_decorator
     def scroll(self, test_data):
@@ -154,8 +171,7 @@ class Actions(Operations):
         try:
             test_data = self.get_element(test_data)
             test_data["element_obj"].click()
-
-            self.driver.switch_to_default_content()
+            # self.driver.switch_to_default_content()
         except (ElementNotVisibleException,ElementNotInteractableException):
             click_obj = None
             for locator in test_data["targets"]: 

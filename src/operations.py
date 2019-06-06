@@ -18,11 +18,14 @@ class Operations(object):
         :return: True if response is 200 else False
         """
         try:
-            request = requests.get(url, verify=False)
-            if request.status_code == 200:
+            if "file:" in url:
                 return True
-            else:
-                return False
+            else: 
+                request = requests.get(url, verify=False)
+                if request.status_code == 200:
+                    return True
+                else:
+                    return False
         except Exception as e:
             print(e)
             return False
