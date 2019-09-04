@@ -11,6 +11,8 @@ __pycache__/
 tmp/
 *.yml
 *.yaml
+!.travis.yml 
+!.travis.yaml 
 *.logs
 
 # C extensions
