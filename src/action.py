@@ -1,40 +1,51 @@
 import time
 import logging
-from src import Operations, ActionChains, webdriver, WebDriverWait, EC, By 
-from selenium.common.exceptions import ElementNotInteractableException, ElementNotVisibleException, TimeoutException
+from src import Operations, ActionChains, webdriver, WebDriverWait, EC, By
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    ElementNotVisibleException,
+    TimeoutException,
+)
 from selenium.webdriver.common.keys import Keys
 
-class Actions(Operations):
 
+class Actions(Operations):
     def __init__(self, global_conf):
         self.global_conf = global_conf
         self.browser_init()
 
     def logger_decorator(function):
-
         def logger_wrapper(*args):
             self = args[0]
             test_data = args[1]
 
             # If no name key in step then add none to avoid execption
-            if "name" not in test_data.keys(): 
+            if "name" not in test_data.keys():
                 test_data["name"] = None
 
-            logging.info("TestCase:{0} - Step:{1} - {2}".format(test_data["testcase_no"],test_data["step_no"], test_data["name"])) 
-            
+            logging.info(
+                "TestCase:{0} - Step:{1} - {2}".format(
+                    test_data["testcase_no"], test_data["step_no"], test_data["name"]
+                )
+            )
+
             # If sleep key mentioned in steps
             if "sleep" in test_data.keys():
-                logging.info("Sleep for {0} seconds before {1} ".format(test_data["sleep"], test_data["action"]))
+                logging.info(
+                    "Sleep for {0} seconds before {1} ".format(
+                        test_data["sleep"], test_data["action"]
+                    )
+                )
                 time.sleep(test_data["sleep"])
-            
+
             # If wait before action mentioned in steps
             elif "wait before action" in test_data.keys():
                 logging.info("waiting before action")
                 self.wait(test_data["wait before action"])
 
-            #method call
+            # method call
             test_result_data = function(*args)
-            
+
             # If wait before action mentioned in steps
             if "wait after action" in test_data.keys():
                 logging.info("waiting after action")
@@ -43,44 +54,67 @@ class Actions(Operations):
             # screenshot after every action
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = "{0}_{1}_{2}_{3}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
+                screenshot_file_name = "{0}_{1}_{2}_{3}".format(
+                    test_data["testcase_no"],
+                    test_data["step_no"],
+                    self.global_conf["locale"],
+                    str(int(round(time.time() * 1000))),
+                )
             else:
-                screenshot_file_name = "{0}_{1}".format(self.global_conf["locale"], test_data["screenshot_name"])
+                screenshot_file_name = "{0}_{1}".format(
+                    self.global_conf["locale"], test_data["screenshot_name"]
+                )
             self.full_page_screenshot(screenshot_file_name)
-            
+
             return test_result_data
-        
+
         return logger_wrapper
 
-
     def browser_init(self):
-        '''
+        """
         init all selenium browser session and create driver object
-        '''
-        if not self.global_conf["webdriver_path"] and self.global_conf["browser"] == "firefox":
+        """
+        if (
+            not self.global_conf["webdriver_path"]
+            and self.global_conf["browser"] == "firefox"
+        ):
             self.global_conf["webdriver_path"] = "./selenium_drivers/geckodriver"
-        elif  not self.global_conf["webdriver_path"] and self.global_conf["browser"] == "chrome":
+        elif (
+            not self.global_conf["webdriver_path"]
+            and self.global_conf["browser"] == "chrome"
+        ):
             self.global_conf["webdriver_path"] = "./selenium_drivers/chromedriver"
-        
+
         if self.global_conf["browser"] == "firefox":
             profile = webdriver.FirefoxProfile()
             profile.set_preference("intl.accept_languages", self.global_conf["locale"])
             profile.accept_untrusted_certs = True
-            self.driver = webdriver.Firefox(firefox_profile=profile, executable_path=self.global_conf["webdriver_path"])
-        elif self.global_conf["browser"] =="chrome":
+            self.driver = webdriver.Firefox(
+                firefox_profile=profile,
+                executable_path=self.global_conf["webdriver_path"],
+            )
+        elif self.global_conf["browser"] == "chrome":
             options = webdriver.ChromeOptions()
-            options.add_experimental_option('prefs', {'intl.accept_languages': '{0}'.format(self.global_conf["locale"])})
-            self.driver = webdriver.Chrome(executable_path=self.global_conf["webdriver_path"], chrome_options=options)
+            options.add_experimental_option(
+                "prefs",
+                {"intl.accept_languages": "{0}".format(self.global_conf["locale"])},
+            )
+            self.driver = webdriver.Chrome(
+                executable_path=self.global_conf["webdriver_path"],
+                chrome_options=options,
+            )
 
         self.driver.maximize_window()
 
     @logger_decorator
     def alertmessage(self, test_data):
-        '''
+        """
         This function will handle all alert messages
-        '''
+        """
         try:
-            WebDriverWait(self.driver, 10).until(EC.alert_is_present(), 'Waiting for alert timed out')
+            WebDriverWait(self.driver, 10).until(
+                EC.alert_is_present(), "Waiting for alert timed out"
+            )
             alert = self.driver.switch_to.alert
             if test_data["value"] == "ok":
                 alert.accept()
@@ -94,22 +128,28 @@ class Actions(Operations):
 
     @logger_decorator
     def scroll(self, test_data):
-        '''
+        """
         This function will scroll given page as per given params
         specify target or x,y 
         default it will do page down
-        '''
+        """
         try:
 
             if "target" in test_data.keys():
-                test_data  = self.get_element(test_data)
-                self.driver.execute_script("arguments[0].scrollIntoView();", test_data["element_obj"])
+                test_data = self.get_element(test_data)
+                self.driver.execute_script(
+                    "arguments[0].scrollIntoView();", test_data["element_obj"]
+                )
             elif "x" in test_data.keys() or "y" in test_data.keys():
                 if "x" not in test_data.keys():
                     test_data["x"] = 0
                 elif "y" not in test_data.keys():
                     test_data["y"] = 0
-                self.driver.execute_script("window.scrollTo(arguments[0], arguments[1]);",test_data["x"],test_data["y"])
+                self.driver.execute_script(
+                    "window.scrollTo(arguments[0], arguments[1]);",
+                    test_data["x"],
+                    test_data["y"],
+                )
             else:
                 test_data["values"] = "Keys.PAGE_DOWN"
                 test_data = self.sendkeys(test_data)
@@ -119,23 +159,22 @@ class Actions(Operations):
             test_data["error"] = True
         return test_data
 
-
     @logger_decorator
     def sendkeys(self, test_data):
-        '''
+        """
         https://seleniumhq.github.io/selenium/docs/api/py/webdriver/selenium.webdriver.common.keys.html
-        '''
+        """
         try:
             print(test_data)
             if "values" in test_data.keys():
-                actions = ActionChains(self.driver) 
-                
+                actions = ActionChains(self.driver)
+
                 if "Keys" in test_data["values"]:
                     actions.send_keys(getattr(Keys, test_data["values"].split(".")[1]))
                 else:
                     actions.send_keys(test_data["values"])
                 actions.perform()
-            
+
             else:
                 logging.error("values attribute not specified/invalid")
                 test_data["error"] = True
@@ -143,7 +182,6 @@ class Actions(Operations):
             logging.error(e)
             test_data["error"] = True
         return test_data
-
 
     @logger_decorator
     def goto(self, test_data):
@@ -172,14 +210,22 @@ class Actions(Operations):
             test_data = self.get_element(test_data)
             test_data["element_obj"].click()
             # self.driver.switch_to_default_content()
-        except (ElementNotVisibleException,ElementNotInteractableException):
+        except (ElementNotVisibleException, ElementNotInteractableException):
             click_obj = None
-            for locator in test_data["targets"]: 
+            for locator in test_data["targets"]:
                 if not click_obj:
                     test_data["target"] = locator
-                    logging.info("finding element for actionchain click using locator: {0} ".format(locator)) 
+                    logging.info(
+                        "finding element for actionchain click using locator: {0} ".format(
+                            locator
+                        )
+                    )
                     try:
-                        click_obj = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, test_data["target"])))
+                        click_obj = WebDriverWait(self.driver, 10).until(
+                            EC.visibility_of_element_located(
+                                (By.XPATH, test_data["target"])
+                            )
+                        )
                     except Exception:
                         click_obj = None
                 else:
@@ -194,16 +240,18 @@ class Actions(Operations):
             test_data["error"] = True
 
         return test_data
-    
+
     @logger_decorator
     def hover(self, test_data):
         try:
             test_data = self.get_element(test_data)
-            ActionChains(self.driver).move_to_element(test_data["element_obj"]).perform()
+            ActionChains(self.driver).move_to_element(
+                test_data["element_obj"]
+            ).perform()
         except Exception as e:
             logging.exception(e)
             test_data["error"] = True
-        
+
         return test_data
 
     @logger_decorator
@@ -222,15 +270,22 @@ class Actions(Operations):
         try:
             screenshot_file_name = None
             if "screenshot_name" not in test_data.keys():
-                screenshot_file_name = "{0}_{1}_{2}_{3}".format(test_data["testcase_no"],test_data["step_no"],self.global_conf["locale"], str(int(round(time.time() * 1000))))
+                screenshot_file_name = "{0}_{1}_{2}_{3}".format(
+                    test_data["testcase_no"],
+                    test_data["step_no"],
+                    self.global_conf["locale"],
+                    str(int(round(time.time() * 1000))),
+                )
             else:
-                screenshot_file_name = "{0}_{1}".format(self.global_conf["locale"], test_data["screenshot_name"])
+                screenshot_file_name = "{0}_{1}".format(
+                    self.global_conf["locale"], test_data["screenshot_name"]
+                )
 
             self.full_page_screenshot(screenshot_file_name)
         except Exception as e:
             logging.exception(e)
             test_data["error"] = True
-        
+
         return test_data
 
     @logger_decorator
@@ -244,18 +299,27 @@ class Actions(Operations):
 
     @logger_decorator
     def validate(self, test_data):
-        
-        xpath_denoter = ("//","/html","/")
+
+        xpath_denoter = ("//", "/html", "/")
 
         if test_data["target"].startswith(xpath_denoter):
             try:
-                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, test_data["target"])))
+                WebDriverWait(self.driver, 20).until(
+                    EC.presence_of_element_located((By.XPATH, test_data["target"]))
+                )
             except:
                 logging.error("Element not found")
                 test_data["error"] = True
         else:
-            try: 
-                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH,"//*[contains(text(), '{0}')]".format(test_data["target"]))))
+            try:
+                WebDriverWait(self.driver, 20).until(
+                    EC.presence_of_element_located(
+                        (
+                            By.XPATH,
+                            "//*[contains(text(), '{0}')]".format(test_data["target"]),
+                        )
+                    )
+                )
             except:
                 logging.error("Element not found")
                 test_data["error"] = True
@@ -266,8 +330,7 @@ class Actions(Operations):
     def function(self, test_data):
         print("yet to implement")
         return test_data
-    
-    
+
     def closebrowser(self, test_data):
         try:
             logging.info("Closing browser...")
