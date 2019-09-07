@@ -14,6 +14,7 @@ tmp/
 !.travis.yml 
 !.travis.yaml 
 *.logs
+config.json
 
 # C extensions
 *.so

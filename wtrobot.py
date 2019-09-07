@@ -1,5 +1,4 @@
-import argparse
-import sys, os
+import sys, os, json
 import logging
 from src import commmandParser
 
@@ -24,59 +23,49 @@ def logger_init(filename):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="WTRobot webautomation framework..")
-    parser.add_argument(
-        "-s", "--script", metavar="", required=True, help="Testscript file path"
-    )
-    parser.add_argument(
-        "-l",
-        "--locale",
-        metavar="",
-        default="en_US",
-        help="The language code to traverse in eg: en_US, ja_JP",
-    )
-    parser.add_argument(
-        "-b",
-        "--browser",
-        metavar="",
-        default="firefox",
-        help="Browser to be used firefox/chrome",
-    )
-    parser.add_argument(
-        "-d",
-        "--driver",
-        metavar="",
-        help="File path to selenium webdriver eg: geckodriver, chromedriver.\
-        By default it will firefox drivers from selenium_drivers dir locally",
-    )
-    parser.add_argument(
-        "-L",
-        "--log",
-        metavar="",
-        default="./wtlog.log",
-        help="WTRobot execution log file path",
-    )
+    config_file_name = "config.json"
+    config = dict()
+    count = 0
+    try:
+        with open(config_file_name) as fobj:
+            config = json.load(fobj)
+            count = len(config)
+    except (OSError, json.decoder.JSONDecodeError):
+        print("config file missing or incorrect, please provide following configurations...")
 
-    args = parser.parse_args()
-    logger_init(args.log)
+    if config is None or "script_filepath" not in config.keys():
+        config["script_filepath"] = (
+            input("Test script filename: test.yaml ? ") or "test.yaml"
+        )
 
-    if not os.path.exists(args.script):
+    if config is None or "browser" not in config.keys():
+        config["browser"] = input("Which browser : firefox ? ") or "firefox"
+
+    if config is None or "webdriver_path" not in config.keys():
+        config["webdriver_path"] = (
+            input("Selenium webdriver : ./selenium_drivers/geckodriver ? ")
+            or "./selenium_drivers/geckodriver"
+        )
+
+    if config is None or "locale" not in config.keys():
+        config["locale"] = input("Which browser locale : en_US ? ") or "en_US"
+
+    if config is None or "log" not in config.keys():
+        config["log"] = (
+            input("WTRobot execution log file path : wtlog.log ? ") or "wtlog.log"
+        )
+
+    logger_init(config["log"])
+    if not os.path.exists(config["script_filepath"]):
         logging.error("Invalid script file path")
         sys.exit(0)
 
-    if args.browser and args.browser not in ["chrome", "firefox"]:
-        logging.error("Support browsers are only firefox and chrome")
+    if not os.path.exists(config["webdriver_path"]):
+        logging.error("Invalid webdriver file path")
         sys.exit(0)
 
-    if args.driver and not os.path.exists(args.driver):
-        logging.error("Invalid webdriver path")
-        sys.exit(0)
+    if count < len(config):
+        with open(config_file_name, "w") as fobj:
+            json.dump(config, fobj, indent=4)
 
-    global_conf = {
-        "script_filepath": args.script,
-        "locale": args.locale,
-        "browser": args.browser,
-        "webdriver_path": args.driver,
-    }
-
-    obj = commmandParser(global_conf)
+    obj = commmandParser(config)
