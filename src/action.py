@@ -76,16 +76,16 @@ class Actions(Operations):
         """
         if (
             not self.global_conf["webdriver_path"]
-            and self.global_conf["browser"] == "firefox"
+            and self.global_conf["browser"].lower() == "firefox"
         ):
             self.global_conf["webdriver_path"] = "./selenium_drivers/geckodriver"
         elif (
             not self.global_conf["webdriver_path"]
-            and self.global_conf["browser"] == "chrome"
+            and self.global_conf["browser"].lower() == "chrome"
         ):
             self.global_conf["webdriver_path"] = "./selenium_drivers/chromedriver"
 
-        if self.global_conf["browser"] == "firefox":
+        if self.global_conf["browser"].lower() == "firefox":
             profile = webdriver.FirefoxProfile()
             profile.set_preference("intl.accept_languages", self.global_conf["locale"])
             profile.accept_untrusted_certs = True
@@ -93,7 +93,7 @@ class Actions(Operations):
                 firefox_profile=profile,
                 executable_path=self.global_conf["webdriver_path"],
             )
-        elif self.global_conf["browser"] == "chrome":
+        elif self.global_conf["browser"].lower() == "chrome":
             options = webdriver.ChromeOptions()
             options.add_experimental_option(
                 "prefs",

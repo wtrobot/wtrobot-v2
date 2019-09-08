@@ -31,7 +31,9 @@ if __name__ == "__main__":
             config = json.load(fobj)
             count = len(config)
     except (OSError, json.decoder.JSONDecodeError):
-        print("config file missing or incorrect, please provide following configurations...")
+        print(
+            "config file missing or incorrect, please provide following configurations..."
+        )
 
     if config is None or "script_filepath" not in config.keys():
         config["script_filepath"] = (
