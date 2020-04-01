@@ -1,0 +1,25 @@
+---
+sequence:
+- testcase 2
+
+test:
+- testcase 1:
+  - scenario: <your test senario desc>
+  - step 1:
+     name: Goto Fedora project web link
+     action: goto
+     target: https://getfedora.org
+  - step 2:
+     name: click download
+     action: click
+     target: /html/body/div[2]/div[3]/div/div/div[1]/div/div[3]/div[2]/a
+- testcase 2:
+  - scenario: demo2
+  - step 1:
+     name: demo2
+     action: goto
+     target: https://docs.fedoraproject.org/en-US/docs
+  - step 2:
+     name: click link
+     action: click
+     target: /html/body/div/main/article/div/div[1]/div[1]/a[1]
