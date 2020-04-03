@@ -7,15 +7,15 @@ The tool follows a yml scripting which you will find below.
 
 ## Setup Instructions:
 ```
-$ git clone <this repo>.
-$ cd <repo directory>.
+$ git clone <this repo>
+$ cd <repo directory>
 $ python3 setup.py install
 ```
 NOTE: 
 - Selenium_drivers folders have your selenium webdrivers geckodrivers(for firefox) and chromedrivers(for chrome and chromium)
 - If script failes due to drivers issue, you need to find appropriate selenium webdriver according to you browser version
--- firefox: https://github.com/mozilla/geckodriver/releases
--- chrome/chromium: https://chromedriver.chromium.org/downloads
+-- [firefox](https://github.com/mozilla/geckodriver/releases) & [chrome/chromium](https://chromedriver.chromium.org/downloads)
+
  Just unzip or untar the executable and place in selenium_drivers dir.
 
 ## Executing Script:
@@ -45,7 +45,8 @@ test:
 ...
 ```
 [sample example](examples/test.yaml)
-[detailed syntax](examples/README.rst)
+
+[detailed syntax](examples/syntax_docs.rst)
 
 - scenario and name are just detailed text description about your testcase scenario and steps, they are useful for detailed logging.
 - There are only three important section to be considered while writing this script file.
